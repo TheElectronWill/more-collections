@@ -1,5 +1,7 @@
 package com.electronwill.collection
 
+import scala.collection.Iterator
+
 /**
  * Extended [[Iterator]] trait that can remove and insert elements.
  * @author TheElectronWill

@@ -61,13 +61,14 @@ object CompactStorage {
     Math.ceil(bitsPerValue * numberOfValues / 8).toInt
   }
 }
+
 /**
  * A `CompactStorage` is a fixed-length container that stores its value in a contiguous way,
  * across the bytes boundaries. There are ''no bit'' between two adjacent values.
  *
  * While a general implementation is provided, better performance is obtained with exactly
- * 4, 8 or 16 bits per value. Use [[CompactStorage$.apply]] to use the most optimised implementation
- * for your case.
+ * 4, 8 or 16 bits per value. Use [[CompactStorage$.apply]]
+ * to use the most optimized implementation for your case.
  *
  * @author TheElectronWill
  */
@@ -133,7 +134,7 @@ sealed abstract class CompactStorage(final val size: Int, final val bytes: Array
 }
 
 /**
- * General implementation of [[com.electronwill.util.CompactStorage]] that works for any number of
+ * General implementation of [[com.electronwill.collection.CompactStorage]] that works for any number of
  * bits per value.
  *
  * @param bitsPerValue how many bits in each value
@@ -174,7 +175,7 @@ final class CompactStorageN private[collection] (val bitsPerValue: Int, s: Int, 
 }
 
 /**
- * An implementation of [[com.electronwill.util.CompactStorage]] optimized for 4-bits values.
+ * An implementation of [[com.electronwill.collection.CompactStorage]] optimized for 4-bits values.
  * @param s number of values
  * @param b byte array that stores the values
  */
@@ -199,7 +200,7 @@ final class CompactStorage4 private[collection] (s: Int, b: Array[Byte]) extends
 }
 
 /**
- * An implementation of [[com.electronwill.util.CompactStorage]] optimized for 8-bits values (i.e.
+ * An implementation of [[com.electronwill.collection.CompactStorage]] optimized for 8-bits values (i.e.
  * one value = one byte in the byte array).
  *
  * @param s number of values
@@ -216,7 +217,7 @@ final class CompactStorage8 private[collection] (s: Int, b: Array[Byte]) extends
 }
 
 /**
- * An implementation of [[com.electronwill.util.CompactStorage]] optimized for 16-bits values (i.e.
+ * An implementation of [[com.electronwill.collection.CompactStorage]] optimized for 16-bits values (i.e.
  * one value = two bytes in the byte array).
  *
  * @param s number of values
