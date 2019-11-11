@@ -1,7 +1,7 @@
 language: scala
 script:
   - git clean -xdf
-  - ./mill -i main.test
+  - ./mill -i main._.test
 cache:
   directories:
     - "$HOME/.coursier"
