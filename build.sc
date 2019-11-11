@@ -15,7 +15,7 @@ object main extends Cross[MainModule]("2.12.10", "2.13.1")
 
 class MainModule(val crossScalaVersion: String) extends CrossScalaModule with PublishModule {
   def artifactName = "more-collections"
-  def publishVersion = "2.0.0"
+  def publishVersion = "1.0.0"
   def scalacOptions = Seq("-deprecation", "-feature")
   
   def pomSettings = PomSettings(
