@@ -1,0 +1,8 @@
+language: scala
+script:
+  - git clean -xdf
+  - ./mill -i main.test
+cache:
+  directories:
+    - "$HOME/.coursier"
+    - "$HOME/.mill/download"
