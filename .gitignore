@@ -1,2 +1,16 @@
-*.class
-*.log
+# Build files
+bin/
+build/
+out/
+
+# Eclipse files
+.classpath
+.project
+.settings
+
+# IntelliJ files
+*.iml
+.idea
+
+# Mac OS DS_STORE
+.DS_STORE
