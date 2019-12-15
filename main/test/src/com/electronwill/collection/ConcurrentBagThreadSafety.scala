@@ -38,7 +38,7 @@ class ConcurrentBagThreadSafety extends AnyFlatSpec {
       val it = bag.iterator
       while (it.hasNext) {
         val next = it.next()
-        assert(next != null)
+        assert(next ne null)
         //println(s"remove $next")
         it.remove()
       }
@@ -47,7 +47,7 @@ class ConcurrentBagThreadSafety extends AnyFlatSpec {
       val it = bag.iterator
       while (it.hasNext) {
         val next = it.next()
-        assert(next != null)
+        assert(next ne null)
         lastRead.set(next)
         //println(s"read $next, size ${bag.size}")
       }
