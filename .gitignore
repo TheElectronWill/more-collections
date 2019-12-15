@@ -11,6 +11,11 @@ out/
 # IntelliJ files
 *.iml
 .idea
+.idea_modules
+
+# LSP
+.metals
+.bloop
 
 # Mac OS DS_STORE
 .DS_STORE
