@@ -1,7 +1,6 @@
 import mill._
 import mill.scalalib._
 import mill.scalalib.publish._
-import coursier.maven.MavenRepository
 
 trait ScalaTest extends TestModule {
   def ivyDeps = Agg(ivy"org.scalatest::scalatest:3.1.0")
@@ -12,7 +11,7 @@ object main extends Cross[MainModule]("2.12.10", "2.13.1")
 
 class MainModule(val crossScalaVersion: String) extends CrossScalaModule with PublishModule {
   def artifactName = "more-collections"
-  def publishVersion = "1.0.0"
+  def publishVersion = "1.0.1"
   def scalacOptions = Seq("-deprecation", "-feature")
 
   def pomSettings = PomSettings(
