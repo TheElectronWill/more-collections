@@ -41,17 +41,17 @@ final class RecyclingIndex[A >: Null <: AnyRef: ClassTag](
   override def size: Int = elementCount
 
   override def +=(element: A): Int = {
-    elementCount += 1
     val id = nextId()
     elements(id) = element
+    elementCount += 1
     id
   }
 
   override def +=(f: Int => A): A = {
-    elementCount += 1
     val id = nextId()
     val elem = f(id)
     elements(id) = elem
+    elementCount += 1
     elem
   }
 
@@ -145,7 +145,7 @@ final class RecyclingIndex[A >: Null <: AnyRef: ClassTag](
       if (nextElement eq null) {
         findNext()
       }
-      nextElement eq null
+      nextElement ne null
     }
     override def next(): (Int, A) = {
       if (nextElement eq null) {

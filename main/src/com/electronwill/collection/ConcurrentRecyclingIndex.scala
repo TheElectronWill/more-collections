@@ -45,7 +45,6 @@ final class ConcurrentRecyclingIndex[A >: Null <: AnyRef: ClassTag](
 
   override def +=(element: A): Int = {
     elements.synchronized {
-      elementCount += 1
       var elems = elements //volatile read; var because it may be replaced by a bigger array
       val id: Int =
         if (recycleCount == 0) {
@@ -58,6 +57,7 @@ final class ConcurrentRecyclingIndex[A >: Null <: AnyRef: ClassTag](
           idsToRecycle(recycleCount)
         }
       elems(id) = element
+      elementCount += 1
       elements = elems //volatile write
       id
     }
@@ -66,7 +66,6 @@ final class ConcurrentRecyclingIndex[A >: Null <: AnyRef: ClassTag](
 
   override def +=(f: Int => A): A = {
     elements.synchronized {
-      elementCount += 1
       var elems = elements //volatile read; var because it may be replaced by a bigger array
       val id: Int =
         if (recycleCount == 0) {
@@ -80,6 +79,7 @@ final class ConcurrentRecyclingIndex[A >: Null <: AnyRef: ClassTag](
         }
       val elem = f(id)
       elems(id) = elem
+      elementCount += 1
       elements = elems //volatile write
       elem
     }
@@ -179,7 +179,7 @@ final class ConcurrentRecyclingIndex[A >: Null <: AnyRef: ClassTag](
       if (nextElement eq null) {
         findNext()
       }
-      nextElement eq null
+      nextElement ne null
     }
     override def next(): (Int, A) = {
       if (nextElement eq null) {
