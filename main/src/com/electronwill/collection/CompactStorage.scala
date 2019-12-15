@@ -1,8 +1,8 @@
 package com.electronwill.collection
 
 /**
- * A `CompactStorage` is a fixed-length container that stores its value in a contiguous way,
- * across the bytes boundaries. There are ''no bit'' between two adjacent values.
+ * A `CompactStorage` is a fixed-length container that stores positive numbers in a contiguous way,
+ * across the bytes boundaries. There is no "gap" between two adjacent values.
  *
  * While a general implementation is provided, better performance is obtained with exactly
  * 4, 8 or 16 bits per value.
@@ -18,15 +18,10 @@ object CompactStorage {
    * @return an instance of CompactStorage with the given settings
    */
   def apply(bitsPerValue: Int, size: Int): CompactStorage = {
-    require(bitsPerValue > 0 && bitsPerValue < 32, "it is required that 0 < bitsPerValue < 32")
+    require(bitsPerValue > 0 && bitsPerValue <= 32, "it is required that 0 < bitsPerValue <= 32")
     val arraySize = byteSize(bitsPerValue, size)
     val byteArray = new Array[Byte](arraySize)
-    bitsPerValue match {
-      case 4  => new CompactStorage4(size, byteArray)
-      case 8  => new CompactStorage8(size, byteArray)
-      case 16 => new CompactStorage16(size, byteArray)
-      case _  => new CompactStorageN(bitsPerValue, size, byteArray)
-    }
+    makeStorage(bitsPerValue, size, byteArray)
   }
 
   /**
@@ -42,6 +37,11 @@ object CompactStorage {
    */
   def apply(bitsPerValue: Int, byteArray: Array[Byte]): CompactStorage = {
     val size = byteArray.length * 8 / bitsPerValue
+    makeStorage(bitsPerValue, size, byteArray)
+  }
+
+  @inline
+  private def makeStorage(bitsPerValue: Int, size: Int, byteArray: Array[Byte]) = {
     bitsPerValue match {
       case 4  => new CompactStorage4(size, byteArray)
       case 8  => new CompactStorage8(size, byteArray)
@@ -58,7 +58,7 @@ object CompactStorage {
    * @return the minimal number of bytes needed to store the values
    */
   def byteSize(bitsPerValue: Int, numberOfValues: Int): Int = {
-    Math.ceil(bitsPerValue * numberOfValues / 8).toInt
+    Math.ceil(bitsPerValue * numberOfValues / 8.0).toInt
   }
 }
 
@@ -74,6 +74,7 @@ object CompactStorage {
  */
 sealed abstract class CompactStorage(final val size: Int, final val bytes: Array[Byte]) {
   final def byteSize: Int = bytes.length
+  final def maxValue: Int = (1 << bitsPerValue) - 1
   def bitsPerValue: Int
 
   /**
@@ -163,11 +164,10 @@ final class CompactStorageN private[collection] (val bitsPerValue: Int, s: Int, 
       val bitIdx = idx * bitsPerValue + i
       val byteIdx = bitIdx >> 3
       val bitInByte = bitIdx & 7
-      val mask = 1 << i
-      if ((value & mask) != 0) {
+      if ((value & (1 << i)) != 0) {
         bytes(byteIdx) = (bytes(byteIdx) | (1 << bitInByte)).toByte // set bit to 1
       } else {
-        bytes(byteIdx) = (bytes(byteIdx) & ~mask).toByte // set bit to 0
+        bytes(byteIdx) = (bytes(byteIdx) & ~(1 << bitInByte)).toByte // set bit to 0
       }
       i += 1
     }
@@ -183,18 +183,18 @@ final class CompactStorage4 private[collection] (s: Int, b: Array[Byte]) extends
   override def bitsPerValue: Int = 4
   override def apply(idx: Int): Int = {
     val byteIdx = idx >> 1 // (>> 1) divides by 2
-    if ((byteIdx & 1) == 0) { // (x & 1) is the same as (x % 2)
-      bytes(byteIdx) >> 4
+    if ((idx & 1) == 0) { // (x & 1) is the same as (x % 2)
+      bytes(byteIdx) & 0x0f
     } else {
-      bytes(byteIdx) & 0xf
+      (bytes(byteIdx) & 0xf0) >> 4
     }
   }
   override def update(idx: Int, value: Int): Unit = {
     val byteIdx = idx >> 1
-    if ((byteIdx & 1) == 0) {
-      bytes(byteIdx) = (((value & 0xf) << 4) | bytes(byteIdx) & 0xf).toByte
+    if ((idx & 1) == 0) {
+      bytes(byteIdx) = ((bytes(byteIdx) & 0xf0) | (value & 0x0f)).toByte
     } else {
-      bytes(byteIdx) = ((value & 0xf) | (bytes(byteIdx) & 0xf0)).toByte
+      bytes(byteIdx) = ((bytes(byteIdx) & 0x0f) | ((value & 0x0f) << 4)).toByte
     }
   }
 }
@@ -209,7 +209,7 @@ final class CompactStorage4 private[collection] (s: Int, b: Array[Byte]) extends
 final class CompactStorage8 private[collection] (s: Int, b: Array[Byte]) extends CompactStorage(s, b) {
   override def bitsPerValue: Int = 8
   override def apply(idx: Int): Int = {
-    bytes(idx)
+    bytes(idx) & 0xff
   }
   override def update(idx: Int, value: Int): Unit = {
     bytes(idx) = value.toByte
@@ -228,7 +228,7 @@ final class CompactStorage16 private[collection] (s: Int, b: Array[Byte]) extend
   override def apply(idx: Int): Int = {
     val firstIdx = idx << 1 // (<< 1) multiplies by 2
     val secondIdx = firstIdx + 1
-    bytes(firstIdx) << 8 | bytes(secondIdx)
+    (bytes(firstIdx) << 8 | bytes(secondIdx)) & 0xffff
   }
   override def update(idx: Int, value: Int): Unit = {
     val firstIdx = idx << 1
